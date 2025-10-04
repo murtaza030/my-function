@@ -9,7 +9,7 @@ export default async ({ req, res, log, error})=>{
   const db = new Databases(client)
   if(req.method == 'GET'){
     const response = await db.listDocuments(
-      DB_ID,
+      Db_id,
       Collection_Id
     )
     return res.json(response.documents)
