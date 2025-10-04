@@ -10,7 +10,7 @@ export default async ({ req, res, log, error})=>{
   if(req.method == 'GET'){
     const response = await db.listDocuments(
       Db_id,
-      Collection_Id
+      collection_id
     )
     return res.json(response.documents)
   }
