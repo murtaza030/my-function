@@ -12,24 +12,43 @@ export default async ({ req, res, log, error }) => {
 
     const db = new Databases(client);
 
-    // ✅ Create new document
+    // 🧩 Parse frontend data safely
+    let bodyData = {};
+    try {
+      if (req.body) {
+        // Appwrite sends data in { data: "stringified-json" }
+        const parsed = JSON.parse(req.body);
+        bodyData =
+          typeof parsed.data === "string" ? JSON.parse(parsed.data) : parsed;
+      }
+    } catch (parseErr) {
+      error("❌ JSON Parse Error: " + parseErr.message);
+      return res.json({ success: false, error: "Invalid JSON format" });
+    }
+
+    // ✅ Create new document (POST)
     if (req.method === "POST") {
-      const body = JSON.parse(req.body); // get data from frontend
-      const { username, email } = body;
+      const { username, email } = bodyData;
 
       if (!username || !email) {
         return res.json({ success: false, error: "Missing fields" });
       }
 
-      const newDoc = await db.createDocument(Db_id, collection_id, ID.unique(), {
-        username,
-        email,
-      });
+      const newDoc = await db.createDocument(
+        Db_id,
+        collection_id,
+        ID.unique(),
+        {
+          username,
+          email,
+        }
+      );
 
+      log("✅ User created successfully!");
       return res.json({ success: true, data: newDoc });
     }
 
-    // ✅ Get all documents
+    // ✅ Get all documents (GET)
     if (req.method === "GET") {
       const response = await db.listDocuments(Db_id, collection_id);
       return res.json({ success: true, data: response.documents });
@@ -37,7 +56,7 @@ export default async ({ req, res, log, error }) => {
 
     return res.json({ success: false, message: "Invalid method" });
   } catch (err) {
-    error(err.message);
+    error("❌ " + err.message);
     return res.json({ success: false, error: err.message });
   }
 };
