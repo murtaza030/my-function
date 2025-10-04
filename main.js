@@ -1,20 +1,20 @@
 import { Client, Databases, ID, Query } from "node-appwrite";
 import bcrypt from "bcryptjs";
-import { enviromentobj } from "./enviromentobject";
+import Enviromentobject from "./Enviromentobject.js";
 
 export default async ({ req, res, log, error }) => {
   try {
     const client = new Client()
-      .setEndpoint(enviromentobj.Endpoint)
-      .setProject(enviromentobj.Project_id)
-      .setKey(enviromentobj.Api_key);
+      .setEndpoint(Enviromentobject.Endpoint)
+      .setProject(Enviromentobject.Project_id)
+      .setKey(Enviromentobject.Api_key);
 
     const databases = new Databases(client);
 
     // Check if admin already exists
     const result = await databases.listDocuments(
-      enviromentobj.Databaseid,
-      enviromentobj.Authcolletion,
+      Enviromentobject.Databaseid,
+      Enviromentobject.Authcolletion,
       [Query.limit(limit), Query.offset(offset), Query.orderDesc("$createdAt")]
     );
 
@@ -23,8 +23,8 @@ export default async ({ req, res, log, error }) => {
       const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
       const adminDoc = await databases.createDocument(
-        enviromentobj.Databaseid,
-        enviromentobj.Authcolletion,
+        Enviromentobject.Databaseid,
+        Enviromentobject.Authcolletion,
         ID.unique(),
         {
           username: "admin@crm.com",
