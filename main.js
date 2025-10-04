@@ -4,8 +4,8 @@ const collection_id = process.env.APPWRITE_USERS_COLLECTION;
 export default async ({ req, res, log, error }) => {
 
     const client = new Client()
-      .setEndpoint(process.env.APPWRITE_ENDPOINT)
-      .setProject(process.env.APPWRITE_PROJECT_ID);
+      .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT)
+      .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
     const db = new Databases(client);
 
