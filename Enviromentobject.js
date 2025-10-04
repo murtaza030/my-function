@@ -7,5 +7,4 @@ const Enviromentobject = {
   Databaseid: import.meta.env.APPWRITE_DATABASE_ID,
   Authcolletion: import.meta.env.APPWRITE_USERS_COLLECTION,
 };
-
 export default Enviromentobject;
