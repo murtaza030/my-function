@@ -1,25 +1,33 @@
-import { Client, Databases } from "node-appwrite";
+import { Client, Databases, ID } from "node-appwrite";
 
 export default async ({ req, res, log, error }) => {
   try {
-    // ✅ Safely parse frontend data
-    let payload = {};
+    // ✅ Allow CORS (for frontend fetch calls)
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Appwrite-Project");
 
-    // req.body might already be an object or a string, handle both
-    if (typeof req.body === "string") {
-      payload = JSON.parse(req.body);
-    } else if (typeof req.body === "object") {
-      payload = req.body;
+    // Handle OPTIONS preflight
+    if (req.method === "OPTIONS") {
+      return res.send("OK");
     }
 
-    const { username, email } = payload;
+    // ✅ Parse body safely
+    let body = {};
+    try {
+      body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    } catch (parseErr) {
+      log("JSON Parse Error:", parseErr);
+      return res.json({ success: false, error: "Invalid JSON format" });
+    }
 
-    // ✅ Check for missing fields
+    const { username, email } = body;
+
     if (!username || !email) {
       return res.json({
         success: false,
         error: "Missing fields — username or email not received",
-        received: payload, // show what was actually received for debugging
+        received: body,
       });
     }
 
@@ -29,29 +37,26 @@ export default async ({ req, res, log, error }) => {
       .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
       .setKey(process.env.APPWRITE_API_KEY);
 
-    const databases = new Databases(client);
+    const db = new Databases(client);
 
     // ✅ Create document
-    const result = await databases.createDocument(
+    const newUser = await db.createDocument(
       process.env.DB_ID,
       process.env.COLLECTION_ID,
-      "unique()",
-      {
-        username,
-        email,
-      }
+      ID.unique(),
+      { username, email }
     );
 
     return res.json({
       success: true,
-      message: "User added successfully",
-      user: result,
+      message: "User added successfully ✅",
+      data: newUser,
     });
   } catch (err) {
-    log(err);
+    error(err.message);
     return res.json({
       success: false,
-      error: err.message || "Unknown error",
+      error: err.message,
     });
   }
 };
