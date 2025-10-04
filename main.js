@@ -1,7 +1,6 @@
 import { Client, Databases } from "node-appwrite";
-import Enviromentobject from "./Enviromentobject.js";
-const db_id = process.env.APPWRITE_DATABASE_ID,
-const collection_id = process.env.APPWRITE_USERS_COLLECTION
+const db_id = process.env.APPWRITE_DATABASE_ID;
+const collection_id = process.env.APPWRITE_USERS_COLLECTION;
 export default async ({ req, res, log, error }) => {
 
     const client = new Client()
