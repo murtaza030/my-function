@@ -1,62 +1,57 @@
-import { Client, Databases, ID } from "node-appwrite";
-
-const projectid = process.env.VITE_APPWRITE_PROJECT_ID;
-const Db_id = process.env.APPWRITE_DATABASE_ID;
-const collection_id = process.env.APPWRITE_USERS_COLLECTION;
+import { Client, Databases } from "node-appwrite";
 
 export default async ({ req, res, log, error }) => {
   try {
+    // ✅ Safely parse frontend data
+    let payload = {};
+
+    // req.body might already be an object or a string, handle both
+    if (typeof req.body === "string") {
+      payload = JSON.parse(req.body);
+    } else if (typeof req.body === "object") {
+      payload = req.body;
+    }
+
+    const { username, email } = payload;
+
+    // ✅ Check for missing fields
+    if (!username || !email) {
+      return res.json({
+        success: false,
+        error: "Missing fields — username or email not received",
+        received: payload, // show what was actually received for debugging
+      });
+    }
+
+    // ✅ Setup Appwrite client
     const client = new Client()
-      .setEndpoint("https://fra.cloud.appwrite.io/v1")
-      .setProject(projectid);
+      .setEndpoint("https://cloud.appwrite.io/v1")
+      .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
 
-    const db = new Databases(client);
+    const databases = new Databases(client);
 
-    // 🧩 Parse frontend data safely
-    let bodyData = {};
-    try {
-      if (req.body) {
-        // Appwrite sends data in { data: "stringified-json" }
-        const parsed = JSON.parse(req.body);
-        bodyData =
-          typeof parsed.data === "string" ? JSON.parse(parsed.data) : parsed;
+    // ✅ Create document
+    const result = await databases.createDocument(
+      process.env.DB_ID,
+      process.env.COLLECTION_ID,
+      "unique()",
+      {
+        username,
+        email,
       }
-    } catch (parseErr) {
-      error("❌ JSON Parse Error: " + parseErr.message);
-      return res.json({ success: false, error: "Invalid JSON format" });
-    }
+    );
 
-    // ✅ Create new document (POST)
-    if (req.method === "POST") {
-      const { username, email } = bodyData;
-
-      if (!username || !email) {
-        return res.json({ success: false, error: "Missing fields" });
-      }
-
-      const newDoc = await db.createDocument(
-        Db_id,
-        collection_id,
-        ID.unique(),
-        {
-          username,
-          email,
-        }
-      );
-
-      log("✅ User created successfully!");
-      return res.json({ success: true, data: newDoc });
-    }
-
-    // ✅ Get all documents (GET)
-    if (req.method === "GET") {
-      const response = await db.listDocuments(Db_id, collection_id);
-      return res.json({ success: true, data: response.documents });
-    }
-
-    return res.json({ success: false, message: "Invalid method" });
+    return res.json({
+      success: true,
+      message: "User added successfully",
+      user: result,
+    });
   } catch (err) {
-    error("❌ " + err.message);
-    return res.json({ success: false, error: err.message });
+    log(err);
+    return res.json({
+      success: false,
+      error: err.message || "Unknown error",
+    });
   }
 };
