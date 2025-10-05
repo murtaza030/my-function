@@ -1,18 +1,33 @@
-import { Client, Databases } from "node-appwrite";
-import Enviromentobject from "./Enviromentobject.js";
+import { Client, Databases, ID } from "node-appwrite";
 
 export default async ({ req, res, log, error }) => {
-  const client = new Client()
-    .setEndpoint(Enviromentobject.Endpoint)
-    .setProject(Enviromentobject.Project_id);
+  try {
+    // Parse data sent from frontend
+    const body = JSON.parse(req.body);
 
-  const db = new Databases(client);
+    // Init Appwrite SDK (server-side)
+    const client = new Client()
+      .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT) // ✅ use proper server env name
+      .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
-  if (req.method === "GET") {
-    const response = await db.listDocuments(
-      Enviromentobject.Databaseid,
-      Enviromentobject.Authcolletion
+    const db = new Databases(client);
+
+    // Create new document
+    const response = await db.createDocument(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.APPWRITE_USERS_COLLECTION,
+      ID.unique(),
+      {
+        firstName: body.firstName || "mustafa",
+      }
     );
-    return res.json(response.documents);
+
+    log("✅ Document created successfully:", response.$id);
+
+    // ✅ Return a proper response to the frontend
+    return res.json({ success: true, id: response.$id });
+  } catch (err) {
+    error("❌ Error creating document:", err.message);
+    return res.json({ success: false, error: err.message });
   }
 };
