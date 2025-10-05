@@ -1,5 +1,5 @@
 import { Client, Databases } from "node-appwrite";
-import { ID } from "appwrite";
+
 const db_id = process.env.APPWRITE_DATABASE_ID;
 const collection_id = process.env.APPWRITE_USERS_COLLECTION;
 export default async ({ req, res, log, error }) => {
@@ -10,7 +10,7 @@ export default async ({ req, res, log, error }) => {
 
     const db = new Databases(client);
     if (req.method === "GET") {
-        const id = ID.unique();
+        const id = 55555
         const response = await databases.createDocument(
       db_id, 
       collection_id,    
