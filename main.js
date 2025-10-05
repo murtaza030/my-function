@@ -23,8 +23,8 @@ export default async ({ req, res, log, error }) => {
       }
     );
 
-    log("Document created successfully:", response.$id);
-    res.json({ success: true, id: response.$id });
+    log("Document created successfully:");
+    res.json({ success: true });
   } catch (err) {
     error("Error creating document:", err.message);
     res.json({ success: false, error: err.message });
