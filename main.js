@@ -7,8 +7,8 @@ export default async ({ req, res, log, error }) => {
 
     // Init Appwrite SDK (server-side)
     const client = new Client()
-      .setEndpoint(process.env.APPWRITE_ENDPOINT) // ✅ use proper server env name
-      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT) // ✅ use proper server env name
+      .setProject(process.env.VITE_APPWRITE_PROJECT_ID)
      
     const db = new Databases(client);
 
