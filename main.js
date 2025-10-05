@@ -1,4 +1,4 @@
-import { Client, Databases } from "node-appwrite";
+import { Client, Databases, ID } from "node-appwrite";
 
 const db_id = process.env.APPWRITE_DATABASE_ID;
 const collection_id = process.env.APPWRITE_USERS_COLLECTION;
@@ -12,11 +12,11 @@ export default async ({ req, res, log, error }) => {
     const db = new Databases(client);
 
     if (req.method === "GET") {
-      const id = "55555";
+      // 🔥 Appwrite will auto-generate a random ID
       const response = await db.createDocument(
         db_id,
         collection_id,
-        id,
+        ID.unique(),
         {
           firstName: "murtaza",
         }
