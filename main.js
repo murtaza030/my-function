@@ -18,7 +18,7 @@ export default async ({ req, res, log, error }) => {
       process.env.APPWRITE_USERS_COLLECTION,
       ID.unique(),
       {
-        firstName: body.firstName || "mustafa",
+        firstName: body.firstName,
       }
     );
 
