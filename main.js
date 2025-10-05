@@ -5,21 +5,30 @@ const collection_id = process.env.APPWRITE_USERS_COLLECTION;
 
 export default async ({ req, res, log, error }) => {
   try {
+    // ✅ Initialize Appwrite Client
     const client = new Client()
       .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT)
       .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
     const db = new Databases(client);
 
-    if (req.method === "GET") {
-      // 🔥 Appwrite will auto-generate a random ID
+    // ✅ Only allow POST requests
+    if (req.method === "POST") {
+      // 🧠 Parse request body from frontend
+      const body = await req.json();
+      if (!body || !body.firstName) {
+        return res.json({
+          success: false,
+          error: "Missing field: firstName",
+        });
+      }
+
+      // ✅ Create document with random ID
       const response = await db.createDocument(
         db_id,
         collection_id,
         ID.unique(),
-        {
-          firstName: "murtaza",
-        }
+        body
       );
 
       return res.json({
@@ -28,12 +37,13 @@ export default async ({ req, res, log, error }) => {
       });
     }
 
+    // ❌ If method not POST
     return res.json({
       success: false,
-      error: "Unsupported request method",
+      error: "Only POST method allowed",
     });
   } catch (err) {
-    log("Error creating document:", err.message);
+    log("Error:", err.message);
     return res.json({
       success: false,
       error: err.message,
