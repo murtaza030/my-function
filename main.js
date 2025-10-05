@@ -5,25 +5,29 @@ const collection_id = process.env.APPWRITE_USERS_COLLECTION;
 
 export default async ({ req, res, log, error }) => {
   try {
-    // ✅ Initialize Appwrite Client
+    // ✅ Add CORS headers for frontend access
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    // ✅ Handle preflight OPTIONS request (important)
+    if (req.method === "OPTIONS") {
+      return res.send("", 204);
+    }
+
     const client = new Client()
       .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT)
       .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
     const db = new Databases(client);
 
-    // ✅ Only allow POST requests
     if (req.method === "POST") {
-      // 🧠 Parse request body from frontend
       const body = await req.json();
+
       if (!body || !body.firstName) {
-        return res.json({
-          success: false,
-          error: "Missing field: firstName",
-        });
+        return res.json({ success: false, error: "Missing firstName" });
       }
 
-      // ✅ Create document with random ID
       const response = await db.createDocument(
         db_id,
         collection_id,
@@ -31,22 +35,12 @@ export default async ({ req, res, log, error }) => {
         body
       );
 
-      return res.json({
-        success: true,
-        data: response,
-      });
+      return res.json({ success: true, data: response });
     }
 
-    // ❌ If method not POST
-    return res.json({
-      success: false,
-      error: "Only POST method allowed",
-    });
+    return res.json({ success: false, error: "Only POST method allowed" });
   } catch (err) {
     log("Error:", err.message);
-    return res.json({
-      success: false,
-      error: err.message,
-    });
+    return res.json({ success: false, error: err.message });
   }
 };
