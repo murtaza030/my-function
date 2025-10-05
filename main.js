@@ -9,8 +9,7 @@ export default async ({ req, res, log, error }) => {
     const client = new Client()
       .setEndpoint(process.env.APPWRITE_ENDPOINT) // ✅ use proper server env name
       .setProject(process.env.APPWRITE_PROJECT_ID)
-      .setKey(process.env.APPWRITE_API_KEY); // ✅ add server key for permissions
-
+     
     const db = new Databases(client);
 
     // Create new document
