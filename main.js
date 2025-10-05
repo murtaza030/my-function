@@ -8,12 +8,16 @@ export default async ({ req, res, log, error }) => {
       .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
     const db = new Databases(client);
-
     if (req.method === "GET") {
-      const response = await db.listDocuments(
-        db_id,
-        collection_id
-      );
+        const id = ID.unique();
+        const response = await databases.createDocument(
+      db_id, 
+      collection_id,    
+      id,                            
+      {
+        firstName:murtaza
+      }
+    );
       return res.json(response.documents);
     }
 };
