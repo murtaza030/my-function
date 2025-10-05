@@ -19,7 +19,7 @@ export default async ({ req, res, log, error }) => {
       process.env.APPWRITE_USERS_COLLECTION,
       ID.unique(), // let Appwrite create a unique ID
       {
-        firstName: "mustafa"
+        firstName: body.firstName
       }
     );
 
