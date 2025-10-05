@@ -11,7 +11,7 @@ export default async ({ req, res, log, error }) => {
     const db = new Databases(client);
     if (req.method === "GET") {
         const id = 55555
-        const response = await databases.createDocument(
+        const response = await db.createDocument(
       db_id, 
       collection_id,    
       id,                            
