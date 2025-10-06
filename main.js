@@ -19,7 +19,7 @@ export default async ({ req, res, log, error }) => {
         if (!data.Password) throw new Error("Password required");
 
         const hashedPassword = await bcrypt.hash(data.Password, 10);
-        const userData = { ...data, Password: hashedPassword };
+        const userData = { ...data, Password: `${hashedPassword}` };
 
         result = await db.createDocument(
           process.env.APPWRITE_DATABASE_ID,
