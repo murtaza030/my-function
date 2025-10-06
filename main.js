@@ -38,17 +38,28 @@ export default async ({ req, res, log, error }) => {
           process.env.APPWRITE_USERS_COLLECTION
         );
 
-        const user = users.documents.find((u) => u.email === data.email);
+        // ✅ Use correct case (your schema may have "email" or "Email")
+        const user = users.documents.find(
+          (u) => u.email === data.email // make sure both sides match case
+        );
 
         if (!user) throw new Error("User not found");
 
-        // 2️⃣ Compare password
-        const isMatch = await bcrypt.compare(data.Password, user.Password);
+        // 2️⃣ Compare password only for this user
+        const isMatch = await bcrypt.compare(data.password, user.password);
 
-        if (!isMatch) throw new Error("Invalid password");
+        if (!isMatch) throw new Error("Invalid email or password");
 
         // ✅ Login success
-        result = { message: "Login successful", user };
+        result = {
+          message: "Login successful",
+          user: {
+            $id: user.$id,
+            name: user.name,
+            email: user.email,
+            // don't return password for security
+          },
+        };
         break;
       }
 
