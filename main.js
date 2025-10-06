@@ -46,7 +46,7 @@ export default async ({ req, res, log, error }) => {
         if (!user) throw new Error("User not found");
 
         // 2️⃣ Compare password only for this user
-        const isMatch = await bcrypt.compare(data.password, user.password);
+        const isMatch = await bcrypt.compare(data.Password, user.Password);
 
         if (!isMatch) throw new Error("Invalid email or password");
 
