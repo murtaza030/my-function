@@ -86,36 +86,39 @@ export default async ({ req, res, log, error }) => {
 
       // 🧩 LOGIN USER (check email + password)
       case "login": {
-        // 1️⃣ Find user by email
-        const users = await db.listDocuments(
-          process.env.APPWRITE_DATABASE_ID,
-          process.env.APPWRITE_USERS_COLLECTION
-        );
+  const { email, Password } = data;
 
-        // ✅ Use correct case (your schema may have "email" or "Email")
-        const user = users.documents.find(
-          (u) => u.email === data.email // make sure both sides match case
-        );
+  // 1️⃣ Find user by email
+  const users = await db.listDocuments(
+    process.env.APPWRITE_DATABASE_ID,
+    process.env.APPWRITE_USERS_COLLECTION,
+    [Query.equal("email", email)]
+  );
 
-        if (!user) throw new Error("User not found");
+  const user = users.documents[0];
+  if (!user) throw new Error("User not found");
 
-        // 2️⃣ Compare password only for this user
-        const isMatch = await bcrypt.compare(data.Password, user.Password);
+  // 2️⃣ Compare password
+  const isMatch = await bcrypt.compare(Password, user.Password);
+  if (!isMatch) throw new Error("Invalid email or password");
 
-        if (!isMatch) throw new Error("Invalid email or password");
+  // 3️⃣ Generate a simple session token
+  const token = crypto.randomBytes(24).toString("hex");
 
-        // ✅ Login success
-        result = {
-          message: "Login successful",
-          user: {
-            $id: user.$id,
-            name: user.name,
-            email: user.email,
-            // don't return password for security
-          },
-        };
-        break;
-      }
+  // 4️⃣ Return success
+  result = {
+    message: "Login successful",
+    token,
+    user: {
+      $id: user.$id,
+      Username: user.Username,
+      email: user.email,
+      role: user.role,
+    },
+  };
+  break;
+}
+
 
       // 🧩 GET ALL USERS
       case "get":
