@@ -16,18 +16,72 @@ export default async ({ req, res, log, error }) => {
     switch (action) {
       // 🧩 CREATE USER (hash password)
       case "create": {
-        if (!data.Password) throw new Error("Password required");
+  if (!data.Password) throw new Error("Password required");
 
-        const hashedPassword = await bcrypt.hash(data.Password, 10);
-        const userData = { ...data, Password: `${hashedPassword}` };
+  // 🔒 Hash password
+  const hashedPassword = await bcrypt.hash(data.Password, 10);
 
-        result = await db.createDocument(
-          process.env.APPWRITE_DATABASE_ID,
-          process.env.APPWRITE_USERS_COLLECTION,
-          ID.unique(),
-          userData
-        );
-        break;
+  // 🔍 Find the creator (who is creating new user)
+  let creator = null;
+  if (data.createdByEmail) {
+    const allUsers = await db.listDocuments(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.APPWRITE_USERS_COLLECTION
+    );
+    creator = allUsers.documents.find(
+      (u) => u.email === data.createdByEmail
+    );
+  }
+
+  // 🧩 Create role-based ID logic
+  const random = Math.floor(Math.random() * 1000);
+  let extraIds = {};
+
+  if (data.role === "admin") {
+    extraIds = { adminId: `ad${random}` };
+  } else if (data.role === "broker") {
+    if (!creator || creator.role !== "admin")
+      throw new Error("Only admin can create broker");
+    extraIds = {
+      brokerId: `br${random}`,
+      adminId: creator.adminId || creator.id || `ad${random}`,
+    };
+  } else if (data.role === "agent") {
+    if (!creator)
+      throw new Error("Agent must be created by admin or broker");
+    if (creator.role === "admin") {
+      extraIds = {
+        agentId: `ag${random}`,
+        adminId: creator.adminId || creator.id,
+      };
+    } else if (creator.role === "broker") {
+      extraIds = {
+        agentId: `ag${random}`,
+        brokerId: creator.brokerId || creator.id,
+        adminId: creator.adminId,
+      };
+    } else {
+      throw new Error("Agent cannot create another user");
+    }
+  } else {
+    throw new Error("Invalid role");
+  }
+
+  // 🧾 Final user data
+  const userData = {
+    ...data,
+    Password: hashedPassword,
+    ...extraIds,
+  };
+
+  // 💾 Save user in Appwrite
+  result = await db.createDocument(
+    process.env.APPWRITE_DATABASE_ID,
+    process.env.APPWRITE_USERS_COLLECTION,
+    ID.unique(),
+    userData
+  );
+  break;
       }
 
       // 🧩 LOGIN USER (check email + password)
