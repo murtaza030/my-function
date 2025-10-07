@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from "node-appwrite";
+import { Client, Databases,Query, ID } from "node-appwrite";
 import bcrypt from "bcrypt";
 
 export default async ({ req, res, log, error }) => {
