@@ -156,7 +156,7 @@ export default async ({ req, res, log, error }) => {
           result = await db.listDocuments(
             process.env.APPWRITE_DATABASE_ID,
             process.env.APPWRITE_USERS_COLLECTION,
-            [Query.equal("createdByEmail", email)]
+            [Query.equal("brokerEmail", email)]
           );
         } else {
           // ✅ Agent or others — no access
