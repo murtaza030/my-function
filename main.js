@@ -143,10 +143,26 @@ export default async ({ req, res, log, error }) => {
 
       // 🧩 GET USERS
       case "get":
-        result = await db.listDocuments(
-          process.env.APPWRITE_DATABASE_ID,
-          process.env.APPWRITE_USERS_COLLECTION
-        );
+        const { role, email } = data;
+
+        if (role === "admin") {
+          // ✅ Admin can see all users
+          result = await db.listDocuments(
+            process.env.APPWRITE_DATABASE_ID,
+            process.env.APPWRITE_USERS_COLLECTION
+          );
+        } else if (role === "broker") {
+          // ✅ Broker can only see users created by them
+          result = await db.listDocuments(
+            process.env.APPWRITE_DATABASE_ID,
+            process.env.APPWRITE_USERS_COLLECTION,
+            [Query.equal("createdByEmail", email)]
+          );
+        } else {
+          // ✅ Agent or others — no access
+          result = { documents: [] };
+        }
+
         break;
 
       // 🧩 UPDATE
