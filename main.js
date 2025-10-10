@@ -183,7 +183,7 @@ export default async ({ req, res, log, error }) => {
           process.env.APPWRITE_DATABASE_ID,
           process.env.APPWRITE_User_Details_COLLECTION,
           idp,
-          {fieldp:valuep}
+          {[fieldp]:valuep}
         );
         break;
 
