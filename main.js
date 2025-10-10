@@ -177,7 +177,7 @@ export default async ({ req, res, log, error }) => {
  // 🧩 UPDATE USER PERMESSION
       case "updateUser_permissions":
         const {idp,
-        updateFieldsp} = body
+        updateFieldsp} = data
        result = await db.updateDocument(
           process.env.APPWRITE_DATABASE_ID,
           process.env.APPWRITE_USERS_COLLECTION,
