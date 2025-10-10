@@ -114,7 +114,7 @@ export default async ({ req, res, log, error }) => {
       // 🧩 LOGIN USER
       case "login": {
         const { email, Password } = data;
-
+        console.log(email, Password)
         const users = await db.listDocuments(
           process.env.APPWRITE_DATABASE_ID,
           process.env.APPWRITE_USERS_COLLECTION,
