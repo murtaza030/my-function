@@ -15,14 +15,14 @@ export default async ({ req, res, log, error }) => {
     let result;
 
     switch (action) {
-      // 🧩 CREATE USER (hash password + role logic)
+      // 🧩 CREATE USER (with role logic)
       case "create": {
         if (!data.Password) throw new Error("Password required");
 
         // 🔒 Hash password
         const hashedPassword = await bcrypt.hash(data.Password, 10);
 
-        // 🔍 Find the creator (who is creating new user)
+        // 🔍 Find the creator
         let creator = null;
         if (data.createdByEmail) {
           const allUsers = await db.listDocuments(
@@ -67,7 +67,7 @@ export default async ({ req, res, log, error }) => {
         } else {
           throw new Error("Invalid role");
         }
-
+        const ids = ID.unique(),
         // 🧾 Final user data
         const userData = {
           ...data,
@@ -75,21 +75,45 @@ export default async ({ req, res, log, error }) => {
           ...extraIds,
         };
 
-        // 💾 Save user in Appwrite
-        result = await db.createDocument(
+        // 💾 Save user in main Users collection
+        const createdUser = await db.createDocument(
           process.env.APPWRITE_DATABASE_ID,
           process.env.APPWRITE_USERS_COLLECTION,
-          ID.unique(),
+          ids,
           userData
         );
+
+        result = createdUser;
+
+        // ✅ If agent is created, add to another collection
+        if (data.role === "agent") {
+          const agentProfileData = {
+            agentId: createdUser.agentId,
+            createdBy: createdUser.createdByEmail,
+            brokerId: createdUser.brokerId || null,
+            adminId: createdUser.adminId || null,
+            createdAt: new Date().toISOString(),
+            status: "Active",
+          };
+
+          const agentResult = await db.createDocument(
+            process.env.APPWRITE_DATABASE_ID,
+            process.env.APPWRITE_User_Details_COLLECTION, // 🧩 your second collection ID here
+            ids,
+            agentProfileData
+          );
+
+          // combine result for clarity
+          result = { user: createdUser, agentProfile: agentResult };
+        }
+
         break;
       }
 
-      // 🧩 LOGIN USER (check email + password)
+      // 🧩 LOGIN USER
       case "login": {
         const { email, Password } = data;
 
-        // 1️⃣ Find user by email
         const users = await db.listDocuments(
           process.env.APPWRITE_DATABASE_ID,
           process.env.APPWRITE_USERS_COLLECTION,
@@ -99,14 +123,11 @@ export default async ({ req, res, log, error }) => {
         const user = users.documents[0];
         if (!user) throw new Error("User not found");
 
-        // 2️⃣ Compare password
         const isMatch = await bcrypt.compare(Password, user.Password);
         if (!isMatch) throw new Error("Invalid email or password");
 
-        // 3️⃣ Generate a simple session token
         const token = crypto.randomBytes(24).toString("hex");
 
-        // 4️⃣ Return success
         result = {
           message: "Login successful",
           token,
@@ -120,7 +141,7 @@ export default async ({ req, res, log, error }) => {
         break;
       }
 
-      // 🧩 GET ALL USERS
+      // 🧩 GET USERS
       case "get":
         result = await db.listDocuments(
           process.env.APPWRITE_DATABASE_ID,
@@ -128,6 +149,7 @@ export default async ({ req, res, log, error }) => {
         );
         break;
 
+      // 🧩 UPDATE
       case "update":
         result = await db.updateDocument(
           process.env.APPWRITE_DATABASE_ID,
@@ -137,6 +159,7 @@ export default async ({ req, res, log, error }) => {
         );
         break;
 
+      // 🧩 DELETE
       case "delete":
         result = await db.deleteDocument(
           process.env.APPWRITE_DATABASE_ID,
