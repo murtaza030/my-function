@@ -174,6 +174,18 @@ export default async ({ req, res, log, error }) => {
           data.updateFields
         );
         break;
+ // 🧩 UPDATE USER PERMESSION
+      case "updateUser_permissions":
+        const {idp,
+        fieldp,
+        valuep} = body
+        result = await db.updateDocument(
+          process.env.APPWRITE_DATABASE_ID,
+          process.env.APPWRITE_User_Details_COLLECTION,
+          idp,
+          {fieldp:valuep}
+        );
+        break;
 
       // 🧩 DELETE
       case "delete":
