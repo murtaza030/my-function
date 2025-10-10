@@ -9,8 +9,7 @@ export default async ({ req, res, log, error }) => {
 
     const client = new Client()
       .setEndpoint(process.env.VITE_APPWRITE_ENDPOINT)
-      .setProject(process.env.VITE_APPWRITE_PROJECT_ID)
-      .setKey(process.env.APPWRITE_API_KEY);
+      .setProject(process.env.VITE_APPWRITE_PROJECT_ID);
 
     const db = new Databases(client);
     let result;
