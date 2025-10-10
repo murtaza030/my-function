@@ -67,7 +67,7 @@ export default async ({ req, res, log, error }) => {
         } else {
           throw new Error("Invalid role");
         }
-        const ids = ID.unique(),
+        const ids = ID.unique();
         // 🧾 Final user data
         const userData = {
           ...data,
