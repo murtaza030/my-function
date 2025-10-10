@@ -180,7 +180,7 @@ export default async ({ req, res, log, error }) => {
         updateFieldsp} = data
        result = await db.updateDocument(
           process.env.APPWRITE_DATABASE_ID,
-          process.env.APPWRITE_USERS_COLLECTION,
+          process.env.APPWRITE_User_Details_COLLECTION,
          idp,
           updateFieldsp
         );
